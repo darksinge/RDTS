@@ -1,5 +1,0 @@
-package rdts
-
-func main() {
-
-}

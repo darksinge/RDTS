@@ -1,4 +1,4 @@
-package rdts
+package sequencer
 
 import (
 	"errors"
