@@ -1,4 +1,4 @@
-# RDTS (Resilient Distributed Transaction Service)
+# RDTS (Resilient Distributed Transactions)
 
 ## Introduction
 
