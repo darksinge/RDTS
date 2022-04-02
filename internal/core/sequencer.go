@@ -1,4 +1,4 @@
-package sequencer
+package core
 
 import (
 	"errors"
@@ -34,22 +34,22 @@ import (
 //
 //
 
-type stateMachineNode struct {
-	event             Event
+type sequencerNode struct {
+	event             *Event
 	compensatingEvent *Event
-	next              *stateMachineNode
+	next              *sequencerNode
 }
 
-type stateMachine struct {
+type sequencer struct {
 	id   uuid.UUID
-	head stateMachineNode
-	tail *stateMachineNode
+	head sequencerNode
+	tail *sequencerNode
 }
 
-func checkEventOwners(event Event, compensatingEvent *Event) error {
+func checkEventOwners(event *Event, compensatingEvent *Event) error {
 	// if 'compensatingEvent' is given, then it must be owned by the same Service
 	// as 'event'
-	if compensatingEvent != nil && event.owner.id == compensatingEvent.owner.id {
+	if compensatingEvent != nil && event.Owner.Id == compensatingEvent.Owner.Id {
 		return errors.New("'event' and 'compensatingEvent' must be owned by the same Service.")
 	}
 
@@ -57,18 +57,18 @@ func checkEventOwners(event Event, compensatingEvent *Event) error {
 }
 
 // TODO: Instead of compensatingEvent, maybe it should be an entire state machine
-func NewStateMachine(event Event, compensatingEvent *Event) (*stateMachine, error) {
+func NewStateMachine(event *Event, compensatingEvent *Event) (*sequencer, error) {
 	if err := checkEventOwners(event, compensatingEvent); err != nil {
 		return nil, err
 	}
 
-	head := stateMachineNode{
+	head := sequencerNode{
 		event,
 		compensatingEvent,
 		nil,
 	}
 
-	sm := stateMachine{
+	sm := sequencer{
 		uuid.New(),
 		head,
 		&head,
@@ -77,14 +77,29 @@ func NewStateMachine(event Event, compensatingEvent *Event) (*stateMachine, erro
 	return &sm, nil
 }
 
-func (s *stateMachine) AddEvent(event Event, compensatingEvent *Event) error {
+func detectCycle(s *sequencer) error {
+	visited := make(map[string]bool)
+
+	head := &s.head
+	for head != nil {
+		e := head.event
+		if visited[e.Id.String()] == true {
+			return errors.New("detected cycle in sequencer")
+		}
+
+		visited[e.Id.String()] = true
+		head = head.next
+	}
+
+	return nil
+}
+
+func (s *sequencer) AddEvent(event *Event, compensatingEvent *Event) error {
 	if err := checkEventOwners(event, compensatingEvent); err != nil {
 		return err
 	}
 
-	// TODO: detect event cycles and return error if found
-
-	node := stateMachineNode{
+	node := sequencerNode{
 		event,
 		compensatingEvent,
 		nil,
@@ -93,12 +108,12 @@ func (s *stateMachine) AddEvent(event Event, compensatingEvent *Event) error {
 	s.tail.next = &node
 	s.tail = &node
 
-	return nil
+	return detectCycle(s)
 }
 
-func (s *stateMachine) RemoveEvent(event Event) bool {
+func (s *sequencer) RemoveEvent(event Event) bool {
 	node := &s.head
-	if node.event.id == event.id {
+	if node.event.Id == event.Id {
 		s.head = *s.head.next
 		return true
 	}
@@ -106,7 +121,7 @@ func (s *stateMachine) RemoveEvent(event Event) bool {
 	prev := node
 	next := node.next
 	for prev != nil && next != nil {
-		if next.event.id == event.id {
+		if next.event.Id == event.Id {
 			prev.next = next.next
 			return true
 		}

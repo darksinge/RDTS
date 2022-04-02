@@ -1,11 +1,13 @@
-package rdts
+package core
+
+import "github.com/google/uuid"
 
 type Service struct {
-	id   string
-	name string
+	Id   uuid.UUID
+	Name string
 }
 
-func NewService(id string, name string) Service {
+func NewService(id uuid.UUID, name string) Service {
 	return Service{
 		id,
 		name,
