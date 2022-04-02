@@ -1,4 +1,4 @@
-package core
+package saga
 
 import "github.com/google/uuid"
 
@@ -7,9 +7,9 @@ type Service struct {
 	Name string
 }
 
-func NewService(id uuid.UUID, name string) Service {
+func NewService(name string) Service {
 	return Service{
-		id,
+		uuid.New(),
 		name,
 	}
 }

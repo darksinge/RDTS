@@ -1,4 +1,4 @@
-package core
+package saga
 
 import (
 	"github.com/google/uuid"
