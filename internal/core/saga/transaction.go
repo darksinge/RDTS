@@ -1,7 +1,6 @@
 package saga
 
 import (
-	"context"
 	"time"
 
 	"github.com/google/uuid"
@@ -9,33 +8,41 @@ import (
 
 type DistributedTransaction struct {
 	id                uuid.UUID
-	ctx               *context.Context
 	saga              Saga
 	time              time.Time
-	localTransactions []Transaction
+	deadline          *time.Time
+	localTransactions []localTransaction
 }
 
-func NewDistributedTransaction(ctx *context.Context, saga Saga) DistributedTransaction {
-	trxs := []Transaction{}
+func NewDistributedTransaction(saga Saga) DistributedTransaction {
+	trxs := []localTransaction{}
 	for _, event := range saga.Members() {
-		trxs = append(trxs, NewTransaction(*event))
+		trxs = append(trxs, newLocalTransaction(*event))
 	}
 
 	return DistributedTransaction{
 		uuid.New(),
-		ctx,
 		saga,
 		time.Now(),
+		nil,
 		trxs,
 	}
 }
 
-func (t DistributedTransaction) Id() uuid.UUID {
-	return t.id
+func (dtrx *DistributedTransaction) SetDeadline(t time.Time) {
+	dtrx.deadline = &t
 }
 
-func (t DistributedTransaction) Saga() Saga {
-	return t.saga
+func (dtrx DistributedTransaction) Id() uuid.UUID {
+	return dtrx.id
+}
+
+func (dtrx DistributedTransaction) Saga() Saga {
+	return dtrx.saga
+}
+
+func (dtrx *DistributedTransaction) OnDeadlineExceeded() {
+	panic("not implemented")
 }
 
 func (dtrx *DistributedTransaction) IsComplete() bool {
@@ -58,14 +65,14 @@ func (dtrx *DistributedTransaction) EventCompleted(e Event) {
 	}
 }
 
-type Transaction struct {
+type localTransaction struct {
 	event Event
 	time  *time.Time
 	done  bool
 }
 
-func NewTransaction(e Event) Transaction {
-	return Transaction{e, nil, false}
+func newLocalTransaction(e Event) localTransaction {
+	return localTransaction{e, nil, false}
 }
 
 func (dtrx *DistributedTransaction) BeginLocalTransaction(e Event) {
