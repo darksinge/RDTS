@@ -1,7 +1,7 @@
 package api
 
 import (
-	"orcinator/internal/core/saga"
+	"orcinator/internal/domain/saga"
 
 	"github.com/google/uuid"
 )

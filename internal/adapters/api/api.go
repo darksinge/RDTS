@@ -1,13 +1,13 @@
 package api
 
 import (
-	"orcinator/internal/core/saga"
+	"orcinator/internal/domain/saga"
 	"orcinator/internal/ports"
 )
 
 type App struct {
 	api ports.ApiPort
-	db  ports.IDbPort
+	db  ports.DbPort
 }
 
 func (app *App) RegisterService(name string) {
