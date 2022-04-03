@@ -1,4 +1,4 @@
-module rdts
+module orcinator
 
 go 1.18
 

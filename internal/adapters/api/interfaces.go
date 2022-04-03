@@ -1,7 +1,7 @@
 package api
 
 import (
-	"rdts/internal/core/saga"
+	"orcinator/internal/core/saga"
 
 	"github.com/google/uuid"
 )
@@ -14,4 +14,5 @@ type IApi interface {
 	GetServices() ([]saga.Service, error)
 	GetServiceEvents(serviceId string) ([]saga.Event, error)
 	NotifyDidCompleteTransaction(trxId string, eventId string) error
+	NotifyDidFailTransaction(trxId string, eventId string) error
 }
