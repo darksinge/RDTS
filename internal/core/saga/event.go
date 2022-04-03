@@ -5,9 +5,11 @@ import (
 )
 
 type Event struct {
-	Id    uuid.UUID
-	Name  string
-	Owner *Service
+	Id      uuid.UUID
+	Name    string
+	Owner   *Service
+	schema  string
+	version string
 }
 
 func NewEvent(name string, owner Service) Event {

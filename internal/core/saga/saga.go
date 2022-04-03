@@ -1,6 +1,7 @@
 package saga
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -100,6 +101,6 @@ func (s *Saga) SetInitiator(e Event) (bool, error) {
 	return true, nil
 }
 
-func (s *Saga) StartTransaction() Transaction {
-	return Transaction{uuid.New(), *s}
+func (s *Saga) StartTransaction(ctx *context.Context) DistributedTransaction {
+	return NewDistributedTransaction(ctx, *s)
 }
