@@ -17,7 +17,11 @@ type Saga struct {
 	members []*Event
 }
 
-func New(event Event) Saga {
+func (s Saga) Id() string {
+	return s.id.String()
+}
+
+func New(id uuid.UUID, event Event) Saga {
 	members := []*Event{&event}
 	return Saga{uuid.New(), members}
 }
