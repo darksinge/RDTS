@@ -6,15 +6,15 @@ import (
 	"orcinator/internal/domain/saga"
 )
 
-type CommandPort interface {
+type Commands interface {
 	RegisterService(name string) (uuid.UUID, error)
 }
 
-type QueryPort interface {
+type Queries interface {
 	GetService(serviceId string) (saga.Saga, error)
 }
 
 type ApiPort interface {
-	CommandPort
-	QueryPort
+	Commands
+	Queries
 }
